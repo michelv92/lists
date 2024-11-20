@@ -6,7 +6,7 @@ import $ from 'jquery';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 import 'datatables.net';
 import dayjs from 'dayjs';
-
+import { route } from 'ziggy-js';
 
 defineProps({
     tarefa: {
@@ -30,6 +30,19 @@ const tableRef = ref(null);
 onMounted(() => {
     $(tableRef.value).DataTable();
 });
+
+const deleteTarefa = async (id) => {
+    if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+        try {
+            await axios.delete(route('tarefa.delete', { id }));
+            alert('Tarefa excluída com sucesso.');
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao excluir a tarefa.');
+        }
+    }
+};
 </script>
 
 <template>
@@ -70,13 +83,13 @@ onMounted(() => {
                                     <td>{{ tarefa.descricao }}</td>
                                     <td>{{ getStatusText(tarefa.status) }}</td>
                                     <td>{{ dayjs(tarefa.created_at).format('DD/MM/YYYY HH:mm:ss') }}</td>
-                                    <td>
+                                    <td class="text-center">
                                         <Link :href="route('tarefa.edit', tarefa.id)" class="btn btn-sm btn-warning">
                                         Editar
                                         </Link>
-                                        <!-- <Link :href="route('tarefa.delete', tarefa.id)" method="delete" class="btn btn-sm btn-danger">
+                                        <button @click="deleteTarefa(tarefa.id)" class="btn btn-sm btn-danger ml-3">
                                             Excluir
-                                        </Link> -->
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>

@@ -54,4 +54,17 @@ class TarefaController extends Controller
 
         return redirect()->route('dashboard');
     }
+
+    public function delete(Request $request, $id)
+    {
+        $tarefa = Tarefa::findOrFail($id);
+
+        if (Auth::user()->role !== 1 && Auth::id() !== $tarefa->user_id) {
+            return response()->json(['message' => 'Você não tem permissão para excluir esta tarefa.'], 403);
+        }
+
+        $tarefa->delete();
+
+        return response()->json(['message' => 'Tarefa excluída com sucesso.'], 200);
+    }
 }

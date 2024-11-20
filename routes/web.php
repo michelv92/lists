@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tarefas', [TarefaController::class, 'store'])->name('tarefa.store');
     Route::get('/tarefas/{id}/edit', [TarefaController::class, 'edit'])->name('tarefa.edit');
     Route::put('/tarefas/{id}', [TarefaController::class, 'update'])->name('tarefa.update');
+    Route::delete('/tarefas/{id}', [TarefaController::class, 'delete'])->name('tarefa.delete');
 });
 
 require __DIR__.'/auth.php';
