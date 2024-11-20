@@ -1,54 +1,5 @@
-<script setup>
-import { onMounted, ref } from 'vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import $ from 'jquery';
-import 'datatables.net-dt/css/dataTables.dataTables.css';
-import 'datatables.net';
-import dayjs from 'dayjs';
-import { route } from 'ziggy-js';
-
-defineProps({
-    tarefa: {
-        type: Array,
-        default: () => [],
-    },
-});
-
-
-const getStatusText = (status) => {
-    const statusMap = {
-        1: 'Pendente',
-        2: 'Em andamento',
-        3: 'Concluída',
-    };
-    return statusMap[status] || 'Desconhecido';
-};
-
-const tableRef = ref(null);
-
-onMounted(() => {
-    $(tableRef.value).DataTable();
-});
-
-const deleteTarefa = async (id) => {
-    if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
-        try {
-            await axios.delete(route('tarefa.delete', { id }));
-            alert('Tarefa excluída com sucesso.');
-            window.location.reload();
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao excluir a tarefa.');
-        }
-    }
-};
-</script>
-
 <template>
-
     <Head title="Dashboard" />
-
     <AuthenticatedLayout>
         <template #header>
             <div class="container flex justify-between items-center">
@@ -56,7 +7,7 @@ const deleteTarefa = async (id) => {
                     Lists
                 </h2>
                 <Link :href="route('tarefa.create')" class="btn btn-primary">
-                Nova Tarefa
+                    Nova Tarefa
                 </Link>
             </div>
         </template>
@@ -85,8 +36,11 @@ const deleteTarefa = async (id) => {
                                     <td>{{ dayjs(tarefa.created_at).format('DD/MM/YYYY HH:mm:ss') }}</td>
                                     <td class="text-center">
                                         <Link :href="route('tarefa.edit', tarefa.id)" class="btn btn-sm btn-warning">
-                                        Editar
+                                            Editar
                                         </Link>
+                                        <button @click="openModal(tarefa)" class="btn btn-sm btn-secondary ml-3">
+                                            Ver
+                                        </button>
                                         <button @click="deleteTarefa(tarefa.id)" class="btn btn-sm btn-danger ml-3">
                                             Excluir
                                         </button>
@@ -98,5 +52,85 @@ const deleteTarefa = async (id) => {
                 </div>
             </div>
         </div>
+
+        <!-- Modal -->
+        <div v-if="showModal" class="modal fade show" id="tarefaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Detalhes da Tarefa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="closeModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Título:</strong> {{ selectedTarefa.titulo }}</p>
+                        <p><strong>Descrição:</strong> {{ selectedTarefa.descricao }}</p>
+                        <p><strong>Status:</strong> {{ getStatusText(selectedTarefa.status) }}</p>
+                        <p><strong>Data de criação:</strong> {{ dayjs(selectedTarefa.created_at).format('DD/MM/YYYY HH:mm:ss') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="closeModal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </AuthenticatedLayout>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+import { route } from 'ziggy-js';
+import dayjs from 'dayjs';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+
+defineProps({
+    tarefa: {
+        type: Array,
+        default: () => [],
+    },
+});
+
+const selectedTarefa = ref(null);
+const showModal = ref(false);
+
+const getStatusText = (status) => {
+    const statusMap = {
+        1: 'Pendente',
+        2: 'Em andamento',
+        3: 'Concluída',
+    };
+    return statusMap[status] || 'Desconhecido';
+};
+
+
+const openModal = (tarefa) => {
+    selectedTarefa.value = tarefa;
+    showModal.value = true;
+};
+
+
+const closeModal = () => {
+    showModal.value = false;
+    selectedTarefa.value = null;
+};
+
+
+const deleteTarefa = async (id) => {
+    if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+        try {
+            await axios.delete(route('tarefa.delete', id));
+            alert('Tarefa excluída com sucesso.');
+            window.location.reload()
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao excluir a tarefa.');
+        }
+    }
+};
+</script>
+
+<style scoped>
+.modal.fade.show {
+    display: block;
+}
+</style>

@@ -55,6 +55,13 @@ class TarefaController extends Controller
         return redirect()->route('dashboard');
     }
 
+    public function show($id)
+    {
+        $tarefaView = Tarefa::findOrFail($id);
+
+        return response()->json($tarefaView);
+    }
+
     public function delete(Request $request, $id)
     {
         $tarefa = Tarefa::findOrFail($id);
